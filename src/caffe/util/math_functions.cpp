@@ -359,6 +359,16 @@ double caffe_cpu_asum<double>(const int n, const double* x) {
 }
 
 template <>
+float caffe_cpu_stride_asum<float>(const int n, const float* x, const int incx) {
+  return cblas_sasum(n, x, incx);
+}
+
+template <>
+double caffe_cpu_stride_asum<double>(const int n, const double* x, const int incx) {
+  return cblas_dasum(n, x, incx);
+}
+
+template <>
 void caffe_cpu_scale<float>(const int n, const float alpha, const float *x,
                             float* y) {
   cblas_scopy(n, x, 1, y, 1);
@@ -370,6 +380,20 @@ void caffe_cpu_scale<double>(const int n, const double alpha, const double *x,
                              double* y) {
   cblas_dcopy(n, x, 1, y, 1);
   cblas_dscal(n, alpha, y, 1);
+}
+
+template <>
+void caffe_cpu_stride_scale<float>(const int n, const float alpha, const float *x,
+                            float* y, const int incx) {
+  cblas_scopy(n, x, incx, y, incx);
+  cblas_sscal(n, alpha, y, incx);
+}
+
+template <>
+void caffe_cpu_stride_scale<double>(const int n, const double alpha, const double *x,
+                             double* y, const int incx) {
+  cblas_dcopy(n, x, incx, y, incx);
+  cblas_dscal(n, alpha, y, incx);
 }
 
 }  // namespace caffe

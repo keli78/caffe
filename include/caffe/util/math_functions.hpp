@@ -105,6 +105,10 @@ Dtype caffe_cpu_strided_dot(const int n, const Dtype* x, const int incx,
 template <typename Dtype>
 Dtype caffe_cpu_asum(const int n, const Dtype* x);
 
+// Returns the sum of the absolute values of the elements of vector x with stride of incx
+template <typename Dtype>
+Dtype caffe_cpu_stride_asum(const int n, const Dtype* x, const int incx);
+
 // the branchless, type-safe version from
 // http://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
 template<typename Dtype>
@@ -141,6 +145,9 @@ DEFINE_CAFFE_CPU_UNARY_FUNC(fabs, y[i] = std::fabs(x[i]));
 
 template <typename Dtype>
 void caffe_cpu_scale(const int n, const Dtype alpha, const Dtype *x, Dtype* y);
+
+template <typename Dtype>
+void caffe_cpu_stride_scale(const int n, const Dtype alpha, const Dtype *x, Dtype* y, const int incx);
 
 #ifndef CPU_ONLY  // GPU
 

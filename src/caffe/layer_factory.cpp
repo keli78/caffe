@@ -14,6 +14,7 @@
 #include "caffe/layers/sigmoid_layer.hpp"
 #include "caffe/layers/softmax_layer.hpp"
 #include "caffe/layers/tanh_layer.hpp"
+#include "caffe/layers/normalization_layer.hpp"
 #include "caffe/proto/caffe.pb.h"
 
 #ifdef USE_CUDNN
@@ -261,6 +262,33 @@ shared_ptr<Layer<Dtype> > GetPythonLayer(const LayerParameter& param) {
 
 REGISTER_LAYER_CREATOR(Python, GetPythonLayer);
 #endif
+
+/*
+// Get normalization layer according to engine.
+template <typename Dtype>
+shared_ptr<Layer<Dtype> > GetNormalizationLayer(const LayerParameter& param) {
+  NormalizationParameter_Engine engine = param.relu_param().engine();
+  if (engine == ReLUParameter_Engine_DEFAULT) {
+    engine = ReLUParameter_Engine_CAFFE;
+#ifdef USE_CUDNN
+    engine = ReLUParameter_Engine_CUDNN;
+#endif
+  }
+  if (engine == ReLUParameter_Engine_CAFFE) {
+    return shared_ptr<Layer<Dtype> >(new ReLULayer<Dtype>(param));
+#ifdef USE_CUDNN
+  } else if (engine == ReLUParameter_Engine_CUDNN) {
+    return shared_ptr<Layer<Dtype> >(new CuDNNReLULayer<Dtype>(param));
+#endif
+  } else {
+    LOG(FATAL) << "Layer " << param.name() << " has unknown engine.";
+    throw;  // Avoids missing return warning
+  }
+}
+
+REGISTER_LAYER_CREATOR(Normalization, GetNormalizationLayer);
+*/
+
 
 // Layers that use their constructor as their default creator should be
 // registered in their corresponding cpp files. Do not register them here.
