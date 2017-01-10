@@ -66,8 +66,6 @@ class MaxConvolutionLayer : public BaseConvolutionLayer<Dtype> {
 
   virtual inline const char* type() const { return "Convolution"; }
   
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
  protected:
   virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
