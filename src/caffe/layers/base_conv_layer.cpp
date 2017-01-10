@@ -288,7 +288,9 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_max_conv(const Dtype* input,
                           max_idx = max_idx_ - ic_ * this->blobs_[0]->count(2);
                       }
                   }
-                  LOG(INFO) << "max_val" << max_val;
+                  if (max_val > 0.001) {
+                      LOG(INFO) << "max_val" << max_val;
+                  }
                   output[in_ + this->conv_out_spatial_dim_ * im_] = max_val;
                   max_mask[in_ + this->conv_out_spatial_dim_ * (ic_ + this->blobs_[0]->shape(1) * (im_ + this->conv_out_channels_ * num_idx))] = max_idx;
               }
