@@ -154,6 +154,12 @@ void caffe_cpu_stride_scale(const int n, const Dtype alpha, const Dtype *x, Dtyp
 // Decaf gpu gemm provides an interface that is almost the same as the cpu
 // gemm function - following the c convention and calling the fortran-order
 // gpu code under the hood.
+
+template <typename Dtype>
+void caffe_gpu_dgmm(const CBLAS_SIDE Side, const int M, const int N,
+    const Dtype* A, const Dtype* x, const int incx,
+    Dtype* C);
+    
 template <typename Dtype>
 void caffe_gpu_gemm(const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,

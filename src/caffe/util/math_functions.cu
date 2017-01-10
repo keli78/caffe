@@ -11,6 +11,32 @@
 namespace caffe {
 
 template <>
+void caffe_gpu_dgmm<float>(const CBLAS_SIDE Side, const int M, const int N,
+    const float* A, const float* x, const int incx,
+    float* C) {
+  // Note that cublas follows fortran order.
+  int lda = M;
+  int ldc = M;
+  cublasSideMode_t cuSide =
+      (Side == CblasLeft) ? CUBLAS_SIDE_LEFT : CUBLAS_SIDE_RIGHT;
+  CUBLAS_CHECK(cublasSdgmm(Caffe::cublas_handle(), cuSide,
+      M, N, A, lda, x, incx, C, ldc));
+}
+
+template <>
+void caffe_gpu_dgmm<double>(const CBLAS_SIDE Side, const int M, const int N,
+    const double* A, const double* x, const int incx,
+    double* C) {
+  // Note that cublas follows fortran order.
+  int lda = M;
+  int ldc = M;
+  cublasSideMode_t cuSide =
+      (Side == CblasLeft) ? CUBLAS_SIDE_LEFT : CUBLAS_SIDE_RIGHT;
+  CUBLAS_CHECK(cublasDdgmm(Caffe::cublas_handle(), cuSide,
+      M, N, A, lda, x, incx, C, ldc));
+}
+
+template <>
 void caffe_gpu_gemm<float>(const CBLAS_TRANSPOSE TransA,
     const CBLAS_TRANSPOSE TransB, const int M, const int N, const int K,
     const float alpha, const float* A, const float* B, const float beta,
