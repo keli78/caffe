@@ -19,7 +19,7 @@ void MaxConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
             << "All inputs must have the same shape.";
       }
       // Shape the tops.
-      bottom_shape_ = &bottom[0]->shape();
+      this->bottom_shape_ = &bottom[0]->shape();
       compute_output_shape();
       vector<int> top_shape(bottom[0]->shape().begin(),
           bottom[0]->shape().begin() + this->channel_axis_);
@@ -40,12 +40,12 @@ void MaxConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       // Setup input dimensions (conv_input_shape_).
       vector<int> bottom_dim_blob_shape(1, this->num_spatial_axes_ + 1);
       this->conv_input_shape_.Reshape(this->bottom_dim_blob_shape);
-      int* conv_input_shape_data = conv_input_shape_.mutable_cpu_data();
+      int* conv_input_shape_data = this->conv_input_shape_.mutable_cpu_data();
       for (int i = 0; i < this->num_spatial_axes_ + 1; ++i) {
         if (reverse_dimensions()) {
-          conv_input_shape_data[i] = top[0]->shape(channel_axis_ + i);
+          conv_input_shape_data[i] = top[0]->shape(this->channel_axis_ + i);
         } else {
-          conv_input_shape_data[i] = bottom[0]->shape(channel_axis_ + i);
+          conv_input_shape_data[i] = bottom[0]->shape(this->channel_axis_ + i);
         }
       }
       // The im2col result buffer will only hold one image at a time to avoid
@@ -116,23 +116,23 @@ template <typename Dtype> // TODO (Zhishuai): only valid when group_ == 1
 void MaxConvolutionLayer<Dtype>::forward_cpu_max_conv(const Dtype* input,
     const Dtype* weights, Dtype* output, int num_idx, bool skip_im2col) {
   const Dtype* col_buff = input;
-  if (!is_1x1_) {
+  if (!this->is_1x1_) {
     if (!skip_im2col) {
-      conv_im2col_cpu(input, col_buffer_.mutable_cpu_data());
+      conv_im2col_cpu(input, this->col_buffer_.mutable_cpu_data());
     }
-    col_buff = col_buffer_.cpu_data(); // The size will be 1*(176*15*15)*(14)*(14) in our case
+    col_buff = this->col_buffer_.cpu_data(); // The size will be 1*(176*15*15)*(14)*(14) in our case
   }
   Dtype* transposed_col_buff_ = new Dtype[this->blobs_[0]->count(1)]; // 176*15*15 in our case
   Dtype* dot_proc_ = new Dtype[this->blobs_[0]->count(1)]; // 176*15*15 in our case
   Dtype* max_mask = max_idx_.mutable_cpu_data();
-  for (int g = 0; g < group_; ++g) {
-      for (int im_ = 0; im_ < conv_out_channels_; ++im_) { // 39 in our case
-          for (int in_ = 0; in_ < conv_out_spatial_dim_; ++in_) { // 14^2 in our case
+  for (int g = 0; g < this->group_; ++g) {
+      for (int im_ = 0; im_ < this->conv_out_channels_; ++im_) { // 39 in our case
+          for (int in_ = 0; in_ < this->conv_out_spatial_dim_; ++in_) { // 14^2 in our case
               for (int ic_ = 0; ic_ < this->blobs_[0]->count(1); ++ic_) { // 176*15*15 in our case
-                  transposed_col_buff_[ic_] = *(col_buff + col_offset_ * g + in_ + ic_ * conv_out_spatial_dim_); // Transposing col in col_buff into row in transposed_col_buff_
+                  transposed_col_buff_[ic_] = *(col_buff + this->col_offset_ * g + in_ + ic_ * this->conv_out_spatial_dim_); // Transposing col in col_buff into row in transposed_col_buff_
               }
               caffe_mul(this->blobs_[0]->count(1), 
-                  weights + weight_offset_ * g + im_ * this->blobs_[0]->count(1), 
+                  weights + this->weight_offset_ * g + im_ * this->blobs_[0]->count(1), 
                   transposed_col_buff_, 
                   dot_proc_);
               for (int ic_ = 0; ic_ < this->blobs_[0]->shape(1); ++ic_) { // 176 in our case
@@ -144,8 +144,8 @@ void MaxConvolutionLayer<Dtype>::forward_cpu_max_conv(const Dtype* input,
                           max_idx = max_idx_ - ic_ * this->blobs_[0]->count(2);
                       }
                   }
-                  output[in_ + conv_out_spatial_dim_ * im_] = max_val;
-                  max_mask[in_ + conv_out_spatial_dim_ * (ic_ + this->blobs_[0]->shape(1) * (im_ + conv_out_channels_ * num_idx))] = max_idx;
+                  output[in_ + this->conv_out_spatial_dim_ * im_] = max_val;
+                  max_mask[in_ + this->conv_out_spatial_dim_ * (ic_ + this->blobs_[0]->shape(1) * (im_ + this->conv_out_channels_ * num_idx))] = max_idx;
               }
           }
       }
