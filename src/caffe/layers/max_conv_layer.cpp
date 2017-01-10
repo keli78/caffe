@@ -1,4 +1,3 @@
-#include <limits>
 #include <vector>
 
 #include "caffe/layers/max_conv_layer.hpp"

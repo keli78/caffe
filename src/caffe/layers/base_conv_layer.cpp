@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <vector>
+#include <limits>
 
 #include "caffe/filler.hpp"
 #include "caffe/layers/base_conv_layer.hpp"
