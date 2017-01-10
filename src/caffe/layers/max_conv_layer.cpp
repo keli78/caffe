@@ -32,9 +32,9 @@ void MaxConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
         top[top_id]->Reshape(top_shape);
       }
       if (reverse_dimensions()) {
-        this->conv_out_spatial_dim_ = bottom[0]->count(this->first_spatial_axis);
+        this->conv_out_spatial_dim_ = bottom[0]->count(first_spatial_axis);
       } else {
-        this->conv_out_spatial_dim_ = top[0]->count(this->first_spatial_axis);
+        this->conv_out_spatial_dim_ = top[0]->count(first_spatial_axis);
       }
       this->col_offset_ = this->kernel_dim_ * this->conv_out_spatial_dim_;
       this->output_offset_ = this->conv_out_channels_ * this->conv_out_spatial_dim_ / this->group_;
@@ -67,7 +67,7 @@ void MaxConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       this->num_kernels_im2col_ = this->conv_in_channels_ * this->conv_out_spatial_dim_;
       this->num_kernels_col2im_ = reverse_dimensions() ? this->top_dim_ : this->bottom_dim_;
       // Set up the all ones "bias multiplier" for adding biases by BLAS
-      this->out_spatial_dim_ = top[0]->count(this->first_spatial_axis);
+      this->out_spatial_dim_ = top[0]->count(first_spatial_axis);
       if (this->bias_term_) {
         vector<int> bias_multiplier_shape(1, this->out_spatial_dim_);
         this->bias_multiplier_.Reshape(this->bias_multiplier_shape);
