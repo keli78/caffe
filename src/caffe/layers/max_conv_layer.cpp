@@ -45,5 +45,6 @@ STUB_GPU(MaxConvolutionLayer);
 #endif
 
 INSTANTIATE_CLASS(MaxConvolutionLayer);
+REGISTER_LAYER_CLASS(MaxConvolutionLayer);
 
 }  // namespace caffe
