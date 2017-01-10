@@ -268,7 +268,7 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_max_conv(const Dtype* input,
   }
   Dtype* transposed_col_buff_ = new Dtype[this->blobs_[0]->count(1)]; // 176*15*15 in our case
   Dtype* dot_proc_ = new Dtype[this->blobs_[0]->count(1)]; // 176*15*15 in our case
-  Dtype* max_mask = max_idx_.mutable_cpu_data();
+  int* max_mask = max_idx_.mutable_cpu_data();
   for (int g = 0; g < this->group_; ++g) {
       for (int im_ = 0; im_ < this->conv_out_channels_; ++im_) { // 39 in our case
           for (int in_ = 0; in_ < this->conv_out_spatial_dim_; ++in_) { // 14^2 in our case
