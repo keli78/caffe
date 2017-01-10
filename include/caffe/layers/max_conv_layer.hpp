@@ -76,8 +76,6 @@ class MaxConvolutionLayer : public BaseConvolutionLayer<Dtype> {
       const vector<Blob<Dtype>*>& top) {
           NOT_IMPLEMENTED;
       }
-  void forward_cpu_max_conv(const Dtype* input, const Dtype* weights,
-      Dtype* output, int num_idx, bool skip_im2col = false);
   virtual inline bool reverse_dimensions() { return false; }
   virtual void compute_output_shape();
   
