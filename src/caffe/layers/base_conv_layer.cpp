@@ -251,6 +251,50 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     caffe_set(bias_multiplier_.count(), Dtype(1),
         bias_multiplier_.mutable_cpu_data());
   }
+  max_idx_.Reshape(bottom[0]->num(), num_output_, channels_, 
+    conv_out_spatial_dim_); // BatchSize*39*176*(14*14) in our case
+}
+
+template <typename Dtype> // TODO (Zhishuai): only valid when group_ == 1
+void BaseConvolutionLayer<Dtype>::forward_cpu_max_conv(const Dtype* input,
+    const Dtype* weights, Dtype* output, int num_idx, bool skip_im2col) {
+  const Dtype* col_buff = input;
+  if (!this->is_1x1_) {
+    if (!skip_im2col) {
+      conv_im2col_cpu(input, this->col_buffer_.mutable_cpu_data());
+    }
+    col_buff = this->col_buffer_.cpu_data(); // The size will be 1*(176*15*15)*(14)*(14) in our case
+  }
+  Dtype* transposed_col_buff_ = new Dtype[this->blobs_[0]->count(1)]; // 176*15*15 in our case
+  Dtype* dot_proc_ = new Dtype[this->blobs_[0]->count(1)]; // 176*15*15 in our case
+  Dtype* max_mask = max_idx_.mutable_cpu_data();
+  for (int g = 0; g < this->group_; ++g) {
+      for (int im_ = 0; im_ < this->conv_out_channels_; ++im_) { // 39 in our case
+          for (int in_ = 0; in_ < this->conv_out_spatial_dim_; ++in_) { // 14^2 in our case
+              for (int ic_ = 0; ic_ < this->blobs_[0]->count(1); ++ic_) { // 176*15*15 in our case
+                  transposed_col_buff_[ic_] = *(col_buff + this->col_offset_ * g + in_ + ic_ * this->conv_out_spatial_dim_); // Transposing col in col_buff into row in transposed_col_buff_
+              }
+              caffe_mul(this->blobs_[0]->count(1), 
+                  weights + this->weight_offset_ * g + im_ * this->blobs_[0]->count(1), 
+                  transposed_col_buff_, 
+                  dot_proc_);
+              for (int ic_ = 0; ic_ < this->blobs_[0]->shape(1); ++ic_) { // 176 in our case
+                  int max_idx = -1;
+                  Dtype max_val = -std::numeric_limits<Dtype>::infinity();
+                  for (int max_idx_ = ic_ * this->blobs_[0]->count(2); max_idx_ < (ic_ + 1) * this->blobs_[0]->count(2); ++max_idx_) {
+                      if (dot_proc_[max_idx_] > max_val) {
+                          max_val = dot_proc_[max_idx_];
+                          max_idx = max_idx_ - ic_ * this->blobs_[0]->count(2);
+                      }
+                  }
+                  output[in_ + this->conv_out_spatial_dim_ * im_] = max_val;
+                  max_mask[in_ + this->conv_out_spatial_dim_ * (ic_ + this->blobs_[0]->shape(1) * (im_ + this->conv_out_channels_ * num_idx))] = max_idx;
+              }
+          }
+      }
+  }
+  delete[] dot_proc_;
+  delete[] transposed_col_buff_;
 }
 
 template <typename Dtype>

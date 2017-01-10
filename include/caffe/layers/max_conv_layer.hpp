@@ -81,7 +81,6 @@ class MaxConvolutionLayer : public BaseConvolutionLayer<Dtype> {
   virtual inline bool reverse_dimensions() { return false; }
   virtual void compute_output_shape();
   
-  Blob<int> max_idx_;
   
 };
 
