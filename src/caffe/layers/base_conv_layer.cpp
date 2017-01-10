@@ -260,7 +260,7 @@ template <typename Dtype> // TODO (Zhishuai): only valid when group_ == 1
 void BaseConvolutionLayer<Dtype>::forward_cpu_max_conv(const Dtype* input,
     const Dtype* weights, Dtype* output, int num_idx, bool skip_im2col) {
   const Dtype* col_buff = input;
-  if (!this->is_1x1_) {
+  if (!is_1x1_) {
     if (!skip_im2col) {
       conv_im2col_cpu(input, this->col_buffer_.mutable_cpu_data());
     }
@@ -288,6 +288,7 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_max_conv(const Dtype* input,
                           max_idx = max_idx_ - ic_ * this->blobs_[0]->count(2);
                       }
                   }
+                  LOG(INFO) << "max_val" << max_val;
                   output[in_ + this->conv_out_spatial_dim_ * im_] = max_val;
                   max_mask[in_ + this->conv_out_spatial_dim_ * (ic_ + this->blobs_[0]->shape(1) * (im_ + this->conv_out_channels_ * num_idx))] = max_idx;
               }
