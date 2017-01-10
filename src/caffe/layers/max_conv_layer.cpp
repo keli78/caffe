@@ -10,8 +10,8 @@ void MaxConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const int first_spatial_axis = this->channel_axis_ + 1;
       CHECK_EQ(bottom[0]->num_axes(), first_spatial_axis + this->num_spatial_axes_)
           << "bottom num_axes may not change.";
-      this->num_ = bottom[0]->count(0, channel_axis_);
-      CHECK_EQ(bottom[0]->shape(channel_axis_), this->channels_)
+      this->num_ = bottom[0]->count(0, this->channel_axis_);
+      CHECK_EQ(bottom[0]->shape(this->channel_axis_), this->channels_)
           << "Input size incompatible with convolution kernel.";
       // TODO: generalize to handle inputs of different shapes.
       for (int bottom_id = 1; bottom_id < bottom.size(); ++bottom_id) {
@@ -22,7 +22,7 @@ void MaxConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       bottom_shape_ = &bottom[0]->shape();
       compute_output_shape();
       vector<int> top_shape(bottom[0]->shape().begin(),
-          bottom[0]->shape().begin() + channel_axis_);
+          bottom[0]->shape().begin() + this->channel_axis_);
       top_shape.push_back(this->num_output_);
       for (int i = 0; i < this->num_spatial_axes_; ++i) {
         top_shape.push_back(this->output_shape_[i]);
@@ -31,17 +31,17 @@ void MaxConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
         top[top_id]->Reshape(top_shape);
       }
       if (reverse_dimensions()) {
-        this->conv_out_spatial_dim_ = bottom[0]->count(first_spatial_axis);
+        this->conv_out_spatial_dim_ = bottom[0]->count(this->first_spatial_axis);
       } else {
-        this->conv_out_spatial_dim_ = top[0]->count(first_spatial_axis);
+        this->conv_out_spatial_dim_ = top[0]->count(this->first_spatial_axis);
       }
       this->col_offset_ = this->kernel_dim_ * this->conv_out_spatial_dim_;
       this->output_offset_ = this->conv_out_channels_ * this->conv_out_spatial_dim_ / this->group_;
       // Setup input dimensions (conv_input_shape_).
       vector<int> bottom_dim_blob_shape(1, this->num_spatial_axes_ + 1);
-      this->conv_input_shape_.Reshape(bottom_dim_blob_shape);
+      this->conv_input_shape_.Reshape(this->bottom_dim_blob_shape);
       int* conv_input_shape_data = conv_input_shape_.mutable_cpu_data();
-      for (int i = 0; i < num_spatial_axes_ + 1; ++i) {
+      for (int i = 0; i < this->num_spatial_axes_ + 1; ++i) {
         if (reverse_dimensions()) {
           conv_input_shape_data[i] = top[0]->shape(channel_axis_ + i);
         } else {
@@ -52,8 +52,8 @@ void MaxConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       // overly large memory usage. In the special case of 1x1 convolution
       // it goes lazily unused to save memory.
       this->col_buffer_shape_.clear();
-      this->col_buffer_shape_.push_back(kernel_dim_ * group_);
-      for (int i = 0; i < num_spatial_axes_; ++i) {
+      this->col_buffer_shape_.push_back(this->kernel_dim_ * this->group_);
+      for (int i = 0; i < this->num_spatial_axes_; ++i) {
         if (reverse_dimensions()) {
           this->col_buffer_shape_.push_back(this->input_shape(i + 1));
         } else {
@@ -67,14 +67,14 @@ void MaxConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       this->num_kernels_col2im_ = reverse_dimensions() ? this->top_dim_ : this->bottom_dim_;
       // Set up the all ones "bias multiplier" for adding biases by BLAS
       this->out_spatial_dim_ = top[0]->count(this->first_spatial_axis);
-      if (bias_term_) {
+      if (this->bias_term_) {
         vector<int> bias_multiplier_shape(1, this->out_spatial_dim_);
         this->bias_multiplier_.Reshape(this->bias_multiplier_shape);
         caffe_set(this->bias_multiplier_.count(), Dtype(1),
             this->bias_multiplier_.mutable_cpu_data());
       }
-      max_idx_.Reshape(bottom[0]->num(), num_output_, channels_, 
-        conv_out_spatial_dim_); // BatchSize*39*176*(14*14) in our case
+      max_idx_.Reshape(bottom[0]->num(), this->num_output_, this->channels_, 
+        this->conv_out_spatial_dim_); // BatchSize*39*176*(14*14) in our case
 }
 
 template <typename Dtype> // Copied from conv layer code
