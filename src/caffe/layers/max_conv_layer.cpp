@@ -31,7 +31,7 @@ void MaxConvolutionLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const Dtype* bottom_data = bottom[i]->cpu_data();
     Dtype* top_data = top[i]->mutable_cpu_data();
     for (int n = 0; n < this->num_; ++n) {
-      forward_cpu_max_conv(bottom_data + n * this->bottom_dim_, weight,
+      this->forward_cpu_max_conv(bottom_data + n * this->bottom_dim_, weight,
           top_data + n * this->top_dim_, n);
       if (this->bias_term_) {
         const Dtype* bias = this->blobs_[1]->cpu_data();
