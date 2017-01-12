@@ -387,24 +387,6 @@ void BaseConvolutionLayer<Dtype>::forward_gpu_gemm(const Dtype* input,
   }
 }
 
-template <typename Dtype> // TODO (Zhishuai): only valid when group_ == 1
-void BaseConvolutionLayer<Dtype>::forward_gpu_max_conv(const Dtype* input,
-    const Dtype* weights, Dtype* output, int num_idx, bool skip_im2col) {
-  const Dtype* col_buff = input;
-  if (!is_1x1_) {
-    if (!skip_im2col) {
-      conv_im2col_gpu(input, this->col_buffer_.mutable_gpu_data());
-    }
-    col_buff = this->col_buffer_.gpu_data(); // The size will be 1*(176*15*15)*(14)*(14) in our case
-  }
-  int* max_mask = max_idx_.mutable_gpu_data();
-  for (int g = 0; g < this->group_; ++g) {
-      for (int im_ = 0; im_ < this->conv_out_channels_; ++im_) { // 39 in our case
-          ; // TODO get element-wise multiplication
-      }
-  }
-}
-
 
 template <typename Dtype>
 void BaseConvolutionLayer<Dtype>::forward_gpu_bias(Dtype* output,
