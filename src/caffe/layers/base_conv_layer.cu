@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <vector>
 #include <limits>
+#include <float.h>
 
 #include "caffe/filler.hpp"
 #include "caffe/layers/base_conv_layer.hpp"
@@ -42,7 +43,6 @@ __global__ void MaxConvPool(const int nthreads,
     }
     top_data[index] = maxval;
     mask[index] = maxidx;
-    top_mask[index] = maxidx;
   }
 }
 
@@ -72,6 +72,7 @@ void BaseConvolutionLayer<Dtype>::forward_gpu_max_conv(const Dtype* input,
   Dtype *dev_multiply_res; 
   Dtype *dev_max_pooled;
   Dtype *dev_summed;
+  int* max_mask = max_idx_.mutable_gpu_data();
   cudaMalloc((void **) &dev_multiply_res, (this->blobs_[0]->count(1) * conv_out_spatial_dim_) * sizeof(Dtype)); // (176*15*15)*(14*14) in our case
   cudaMalloc((void **) &dev_max_pooled, (this->blobs_[0]->shape(0) * this->blobs_[0]->shape(1) * conv_out_spatial_dim_) * sizeof(Dtype)); // 39*176*(14*14) in our case
   cudaMalloc((void **) &dev_summed, (this->blobs_[0]->shape(0) * conv_out_spatial_dim_) * sizeof(Dtype)); // 39*14*14 in our case
