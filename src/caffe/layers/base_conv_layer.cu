@@ -72,7 +72,8 @@ void BaseConvolutionLayer<Dtype>::forward_gpu_max_conv(const Dtype* input,
   Dtype *dev_multiply_res; 
   Dtype *dev_max_pooled;
   Dtype *dev_summed;
-  int* max_mask = max_idx_.mutable_gpu_data();
+  int* mask = max_idx_.mutable_gpu_data();
+  int count = this->blobs_[0]->shape(1) * conv_out_spatial_dim_;
   cudaMalloc((void **) &dev_multiply_res, (this->blobs_[0]->count(1) * conv_out_spatial_dim_) * sizeof(Dtype)); // (176*15*15)*(14*14) in our case
   cudaMalloc((void **) &dev_max_pooled, (this->blobs_[0]->shape(0) * this->blobs_[0]->shape(1) * conv_out_spatial_dim_) * sizeof(Dtype)); // 39*176*(14*14) in our case
   cudaMalloc((void **) &dev_summed, (this->blobs_[0]->shape(0) * conv_out_spatial_dim_) * sizeof(Dtype)); // 39*14*14 in our case
@@ -93,8 +94,10 @@ void BaseConvolutionLayer<Dtype>::forward_gpu_max_conv(const Dtype* input,
             dev_max_pooled + im_ * this->blobs_[0]->shape(1) * conv_out_spatial_dim_, this->blobs_[0]->shape(1), conv_out_spatial_dim_, dev_summed + im_ * conv_out_spatial_dim_);
       }
   }
+  CUDA_POST_KERNEL_CHECK;
 }
 
+INSTANTIATE_LAYER_GPU_FUNCS(BaseConvolutionLayer);
 #endif  // !CPU_ONLY
 
 }  // namespace caffe
