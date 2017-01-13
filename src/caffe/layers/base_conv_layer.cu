@@ -97,7 +97,12 @@ void BaseConvolutionLayer<Dtype>::forward_gpu_max_conv(const Dtype* input,
   CUDA_POST_KERNEL_CHECK;
 }
 
-INSTANTIATE_LAYER_GPU_FUNCS(BaseConvolutionLayer);
+template
+void BaseConvolutionLayer<double>::forward_gpu_max_conv(const double* input,
+    const double* weights, double* output, int num_idx, bool skip_im2col);
+template
+void BaseConvolutionLayer<float>::forward_gpu_max_conv(const float* input,
+    const float* weights, float* output, int num_idx, bool skip_im2col);
 #endif  // !CPU_ONLY
 
 }  // namespace caffe
