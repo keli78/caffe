@@ -75,6 +75,16 @@ class MaxConvolutionLayer : public BaseConvolutionLayer<Dtype> {
       const vector<Blob<Dtype>*>& bottom) {
           NOT_IMPLEMENTED;
       }
+      
+#ifndef CPU_ONLY
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+      const vector<Blob<Dtype>*>& top);
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+      const vector<bool>& propagate_down,
+      const vector<Blob<Dtype>*>& bottom) {
+          NOT_IMPLEMENTED;
+      }
+#endif
   virtual inline bool reverse_dimensions() { return false; }
   virtual void compute_output_shape();
   

@@ -96,6 +96,4 @@ void BaseConvolutionLayer<Dtype>::forward_gpu_max_conv(const Dtype* input,
 
 #endif  // !CPU_ONLY
 
-INSTANTIATE_LAYER_GPU_FUNCS(BaseConvolutionLayer);
-
 }  // namespace caffe
