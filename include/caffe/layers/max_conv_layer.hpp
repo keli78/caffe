@@ -64,7 +64,7 @@ class MaxConvolutionLayer : public BaseConvolutionLayer<Dtype> {
   explicit MaxConvolutionLayer(const LayerParameter& param)
       : BaseConvolutionLayer<Dtype>(param) {}
 
-  virtual inline const char* type() const { return "Convolution"; }
+  virtual inline const char* type() const { return "MaxConvolution"; }
   
 
  protected:
