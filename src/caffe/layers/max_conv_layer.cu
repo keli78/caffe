@@ -12,11 +12,10 @@ void MaxConvolutionLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
   for (int i = 0; i < bottom.size(); ++i) {
     const Dtype* bottom_data = bottom[i]->gpu_data();
     Dtype* top_data = top[i]->mutable_gpu_data();
-    for (int n = 0; n < this->num_; ++n)  {//TODO (Zhishuai): check the problem here
+    for (int n = 0; n < this->num_; ++n)  {
       this->forward_gpu_max_conv(bottom_data + n * this->bottom_dim_, weight,
           top_data + n * this->top_dim_, n);
       if (this->bias_term_) {
-	LOG(INFO) << "load bias gpu_data";
         const Dtype* bias = this->blobs_[1]->gpu_data();
         this->forward_gpu_bias(top_data + n * this->top_dim_, bias);
       }

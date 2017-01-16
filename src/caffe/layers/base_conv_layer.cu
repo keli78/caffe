@@ -74,8 +74,8 @@ void BaseConvolutionLayer<Dtype>::forward_gpu_max_conv(const Dtype* input,
   //Dtype *dev_summed;
   int* mask = max_idx_.mutable_gpu_data();
   int count = this->blobs_[0]->shape(1) * conv_out_spatial_dim_;
-  cudaMalloc((void **) &dev_multiply_res, (this->blobs_[0]->count(1) * conv_out_spatial_dim_) * sizeof(Dtype)); // (176*15*15)*(14*14) in our case
-  cudaMalloc((void **) &dev_max_pooled, (this->blobs_[0]->shape(0) * this->blobs_[0]->shape(1) * conv_out_spatial_dim_) * sizeof(Dtype)); // 39*176*(14*14) in our case
+  CUDA_CHECK(cudaMalloc((void **) &dev_multiply_res, (this->blobs_[0]->count(1) * conv_out_spatial_dim_) * sizeof(Dtype))); // (176*15*15)*(14*14) in our case
+  CUDA_CHECK(cudaMalloc((void **) &dev_max_pooled, (this->blobs_[0]->shape(0) * this->blobs_[0]->shape(1) * conv_out_spatial_dim_) * sizeof(Dtype))); // 39*176*(14*14) in our case
   //cudaMalloc((void **) &dev_summed, (this->blobs_[0]->shape(0) * conv_out_spatial_dim_) * sizeof(Dtype)); // 39*14*14 in our case
   for (int g = 0; g < this->group_; ++g) {
       for (int im_ = 0; im_ < this->conv_out_channels_; ++im_) { // 39 in our case
@@ -88,10 +88,12 @@ void BaseConvolutionLayer<Dtype>::forward_gpu_max_conv(const Dtype* input,
             conv_out_spatial_dim_, this->blobs_[0]->count(2), 1, // pooled_width = 14 * 14, kernel_h = 15 * 15, kernel_w = 1 in our case
             this->blobs_[0]->count(2), 1, 0, 0, // stride_h = 15 * 15, stride_w = 1, pad_h = pad_w = 0 in our case
             dev_max_pooled + im_ * this->blobs_[0]->shape(1) * conv_out_spatial_dim_, mask + (im_ + num_idx * conv_out_channels_) * this->blobs_[0]->shape(1) * conv_out_spatial_dim_);
-          AfterPoolSum<<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(count,
+          AfterPoolSum<<<CAFFE_GET_BLOCKS(conv_out_spatial_dim_), CAFFE_CUDA_NUM_THREADS>>>(conv_out_spatial_dim_,
             dev_max_pooled + im_ * this->blobs_[0]->shape(1) * conv_out_spatial_dim_, this->blobs_[0]->shape(1), conv_out_spatial_dim_, output + im_ * conv_out_spatial_dim_);
       }
   }
+  CUDA_CHECK(cudaFree(dev_multiply_res));
+  CUDA_CHECK(cudaFree(dev_max_pooled));
   CUDA_POST_KERNEL_CHECK;
 }
 
