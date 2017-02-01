@@ -64,8 +64,6 @@ __global__ void MaxPoolMaskApply(const int nthreads,
     const int wend = min(wstart + kernel_w, width);
     hstart = max(hstart, 0);
     wstart = max(wstart, 0);
-    const Dtype* const data_slice =
-        data + (n * channels + c) * height * width;
     for (int h = hstart; h < hend; ++h) {
       for (int w = wstart; w < wend; ++w) {
         if (h * width + w != mask[index]) {
@@ -137,22 +135,22 @@ void BaseConvolutionLayer<Dtype>::weight_gpu_max_gemm(const Dtype* input,
     conv_im2col_gpu(input, col_buffer_.mutable_gpu_data());
     col_buff = col_buffer_.gpu_data();
   }
-  Dtype *col_buff_maksed;
+  Dtype *col_buff_masked;
   int count = this->blobs_[0]->shape(1) * conv_out_spatial_dim_;
   int* mask = max_idx_.mutable_gpu_data();
-  CUDA_CHECK(cudaMalloc((void **) &col_buff_maksed, col_buffer_->count(0) * sizeof(Dtype)));
+  CUDA_CHECK(cudaMalloc((void **) &col_buff_masked, col_buffer_->count(0) * sizeof(Dtype)));
   for (int g = 0; g < group_; ++g) {
     for (int im_ = 0; im_ < this->conv_out_channels_; ++im_) { // 39 in our case
-      CUDA_CHECK(cudaMemcpy(col_buff_maksed, col_buff, col_buffer_->count(0) * sizeof(Dtype), cudaMemcpyDeviceToDevice));
+      CUDA_CHECK(cudaMemcpy(col_buff_masked, col_buff, col_buffer_->count(0) * sizeof(Dtype), cudaMemcpyDeviceToDevice));
       MaxPoolMaskApply<<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(count,
-        col_buff_maksed, 1, 1, // num = 1, channels = 1 in our case (to save GPU memory); channels may be set to be 39 if the GPU memory is sufficient
+        col_buff_masked, 1, 1, // num = 1, channels = 1 in our case (to save GPU memory); channels may be set to be 39 if the GPU memory is sufficient
         this->blobs_[0]->count(1), conv_out_spatial_dim_, this->blobs_[0]->shape(1), // height = 176*15*15, width = 14 * 14 pooled_height = 176 in our case
         conv_out_spatial_dim_, this->blobs_[0]->count(2), 1, // pooled_width = 14 * 14, kernel_h = 15 * 15, kernel_w = 1 in our case
         this->blobs_[0]->count(2), 1, 0, 0, // stride_h = 15 * 15, stride_w = 1, pad_h = pad_w = 0 in our case
         mask + (im_ + num_idx * conv_out_channels_) * this->blobs_[0]->shape(1) * conv_out_spatial_dim_);
       caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasTrans, 1,
         kernel_dim_, conv_out_spatial_dim_,
-        (Dtype)1., output + output_offset_ * g + im_ * conv_out_spatial_dim_, col_buff_maksed + col_offset_ * g,
+        (Dtype)1., output + output_offset_ * g + im_ * conv_out_spatial_dim_, col_buff_masked + col_offset_ * g,
         (Dtype)1., weights + weight_offset_ * g + im_ * this->blobs_[0]->count(1));
       }
   }
