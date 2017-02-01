@@ -56,8 +56,6 @@ __global__ void MaxPoolMaskApply(const int nthreads,
   CUDA_KERNEL_LOOP(index, nthreads) {
     const int pw = index % pooled_width;
     const int ph = (index / pooled_width) % pooled_height;
-    const int c = (index / pooled_width / pooled_height) % channels;
-    const int n = index / pooled_width / pooled_height / channels;
     int hstart = ph * stride_h - pad_h;
     int wstart = pw * stride_w - pad_w;
     const int hend = min(hstart + kernel_h, height);
