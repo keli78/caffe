@@ -183,6 +183,15 @@ void BaseConvolutionLayer<Dtype>::backward_gpu_max_gemm(const Dtype* output,
 
 
 template
+void BaseConvolutionLayer<float>::backward_gpu_max_gemm(const float* output,
+    const float* weights, float* input);
+
+template
+void BaseConvolutionLayer<double>::backward_gpu_max_gemm(const double* output,
+    const double* weights, double* input);
+
+
+template
 void BaseConvolutionLayer<double>::forward_gpu_max_conv(const double* input,
     const double* weights, double* output, int num_idx, bool skip_im2col);
 
