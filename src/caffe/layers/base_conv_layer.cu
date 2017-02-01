@@ -201,11 +201,11 @@ void BaseConvolutionLayer<float>::forward_gpu_max_conv(const float* input,
 
 template
 void BaseConvolutionLayer<float>::weight_gpu_max_gemm(const float* input,
-    const float* output, float* weights);
+    const float* output, float* weights, int num_idx);
 
 template
 void BaseConvolutionLayer<double>::weight_gpu_max_gemm(const double* input,
-    const double* output, double* weights);
+    const double* output, double* weights, int num_idx);
 
 #endif  // !CPU_ONLY
 
