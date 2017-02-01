@@ -40,7 +40,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   void weight_cpu_gemm(const Dtype* input, const Dtype* output, Dtype*
       weights);
   void backward_cpu_bias(Dtype* bias, const Dtype* input);
-  
+
   void forward_cpu_max_conv(const Dtype* input, const Dtype* weights,
       Dtype* output, int num_idx, bool skip_im2col = false);
 
@@ -55,6 +55,10 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   void weight_gpu_gemm(const Dtype* col_input, const Dtype* output, Dtype*
       weights);
   void backward_gpu_bias(Dtype* bias, const Dtype* input);
+  void weight_gpu_max_gemm(const Dtype* input,
+      const Dtype* output, Dtype* weights, int num_idx);
+  void backward_gpu_max_gemm(const Dtype* output,
+      const Dtype* weights, Dtype* input);
 #endif
 
   /// @brief The spatial dimensions of the input.
@@ -97,7 +101,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   bool bias_term_;
   bool is_1x1_;
   bool force_nd_im2col_;
-  
+
   Blob<int> max_idx_;
 
  private:
