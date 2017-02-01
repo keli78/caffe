@@ -138,10 +138,10 @@ void BaseConvolutionLayer<Dtype>::weight_gpu_max_gemm(const Dtype* input,
   Dtype *col_buff_masked;
   int count = this->blobs_[0]->shape(1) * conv_out_spatial_dim_;
   int* mask = max_idx_.mutable_gpu_data();
-  CUDA_CHECK(cudaMalloc((void **) &col_buff_masked, col_buffer_->count(0) * sizeof(Dtype)));
+  CUDA_CHECK(cudaMalloc((void **) &col_buff_masked, col_buffer_.count(0) * sizeof(Dtype)));
   for (int g = 0; g < group_; ++g) {
     for (int im_ = 0; im_ < this->conv_out_channels_; ++im_) { // 39 in our case
-      CUDA_CHECK(cudaMemcpy(col_buff_masked, col_buff, col_buffer_->count(0) * sizeof(Dtype), cudaMemcpyDeviceToDevice));
+      CUDA_CHECK(cudaMemcpy(col_buff_masked, col_buff, col_buffer_.count(0) * sizeof(Dtype), cudaMemcpyDeviceToDevice));
       MaxPoolMaskApply<<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(count,
         col_buff_masked, 1, 1, // num = 1, channels = 1 in our case (to save GPU memory); channels may be set to be 39 if the GPU memory is sufficient
         this->blobs_[0]->count(1), conv_out_spatial_dim_, this->blobs_[0]->shape(1), // height = 176*15*15, width = 14 * 14 pooled_height = 176 in our case
@@ -154,6 +154,7 @@ void BaseConvolutionLayer<Dtype>::weight_gpu_max_gemm(const Dtype* input,
         (Dtype)1., weights + weight_offset_ * g + im_ * this->blobs_[0]->count(1));
       }
   }
+  CUDA_CHECK(cudaFree(col_buff_masked));
 }
 
 template <typename Dtype>
@@ -163,20 +164,29 @@ void BaseConvolutionLayer<Dtype>::backward_gpu_max_gemm(const Dtype* output,
   if (is_1x1_) {
     col_buff = input;
   }
-  Dtype reset_ = (Dtype)0.;
+  bool reset_ = true;
+  Dtype* data_diff_masked;
+  CUDA_CHECK(cudaMalloc((void **) &data_diff_masked, col_buffer_.count(0) * sizeof(Dtype)));
   for (int g = 0; g < group_; ++g) {
     for (int im_ = 0; im_ < this->conv_out_channels_; ++im_) { // 39 in our case
       caffe_gpu_gemm<Dtype>(CblasTrans, CblasNoTrans, kernel_dim_,
         conv_out_spatial_dim_, conv_out_channels_ / group_,
         (Dtype)1., weights + weight_offset_ * g + im_ * this->blobs_[0]->count(1),
         output + output_offset_ * g + im_ * conv_out_spatial_dim_,
-        reset_ , col_buff + col_offset_ * g);
-      reset_ = (Dtype)1.;
+        (Dtype)0. , data_diff_masked);
+        if (reset_ == true) {
+          CUDA_CHECK(cudaMemcpy(col_buff, data_diff_masked, col_buffer_.count(0) * sizeof(Dtype), cudaMemcpyDeviceToDevice));
+        }
+        else {
+          caffe_gpu_axpy<Dtype>(col_buffer_.count(0), (Dtype)1., data_diff_masked, col_buff);
+        }
+      reset_ = false;
       }
   }
   if (!is_1x1_) {
     conv_col2im_gpu(col_buff, input);
   }
+  CUDA_CHECK(cudaFree(data_diff_masked));
 }
 
 
