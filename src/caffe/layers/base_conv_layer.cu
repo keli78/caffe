@@ -64,8 +64,6 @@ __global__ void MaxPoolMaskApply(const int nthreads,
     const int wend = min(wstart + kernel_w, width);
     hstart = max(hstart, 0);
     wstart = max(wstart, 0);
-    Dtype maxval = -FLT_MAX;
-    int maxidx = -1;
     const Dtype* const data_slice =
         data + (n * channels + c) * height * width;
     for (int h = hstart; h < hend; ++h) {
@@ -140,6 +138,8 @@ void BaseConvolutionLayer<Dtype>::weight_gpu_max_gemm(const Dtype* input,
     col_buff = col_buffer_.gpu_data();
   }
   Dtype *col_buff_maksed;
+  int count = this->blobs_[0]->shape(1) * conv_out_spatial_dim_;
+  int* mask = max_idx_.mutable_gpu_data();
   CUDA_CHECK(cudaMalloc((void **) &col_buff_maksed, col_buffer_->count(0) * sizeof(Dtype)));
   for (int g = 0; g < group_; ++g) {
     for (int im_ = 0; im_ < this->conv_out_channels_; ++im_) { // 39 in our case
