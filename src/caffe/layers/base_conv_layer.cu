@@ -125,7 +125,7 @@ void BaseConvolutionLayer<Dtype>::forward_gpu_max_conv(const Dtype* input,
   // DEBUG:
   int *max_gpu_mask = max_idx_.mutable_gpu_data(); // 39*176*14*14
   int *max_cpu_mask = malloc(39*176*14*14*sizeof(Dtype));
-  CUDA_CHECK(cudaMemcpy(max_cpu_mask, max_gpu_mask, 39*176*14*14*sizeof(Dype), cudaMemcpyDeviceToHost));
+  CUDA_CHECK(cudaMemcpy(max_cpu_mask, max_gpu_mask, 39*176*14*14*sizeof(Dtype), cudaMemcpyDeviceToHost));
   for (int debug_i = 0; debug_i < 14 * 14; debug_i++) {
     LOG(INFO) << max_cpu_mask[debug_i] << std::endl;
   }
