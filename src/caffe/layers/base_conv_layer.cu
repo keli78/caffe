@@ -155,7 +155,7 @@ void BaseConvolutionLayer<Dtype>::weight_gpu_max_gemm(const Dtype* input,
       }
       CUDA_CHECK(cudaMemcpy(col_buff_masked_cpu, col_buff_masked, col_buffer_.count(0) * sizeof(Dtype), cudaMemcpyDeviceToHost));
       for (int tmp_i = 0; tmp_i < 14 * 14; ++tmp_i) {
-        LOG(INFO) << col_buff_masked_cpu[tmp_i+14*14*66] << std::endl; // do sth
+        LOG(INFO) << "AfterPoolSum" << col_buff_masked_cpu[tmp_i+14*14*66] << std::endl; // do sth
       }
       // DEBUG
       caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasTrans, 1,
