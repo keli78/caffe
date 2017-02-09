@@ -137,10 +137,6 @@ void BaseConvolutionLayer<Dtype>::weight_gpu_max_gemm(const Dtype* input,
   int count = this->blobs_[0]->shape(1) * conv_out_spatial_dim_;
   int* mask = max_idx_.mutable_gpu_data();
   CUDA_CHECK(cudaMalloc((void **) &col_buff_masked, col_buffer_.count(0) * sizeof(Dtype)));
-  //DEBUG
-  Dtype *col_buff_masked_cpu = (Dtype *)malloc(col_buffer_.count(0) * sizeof(Dtype));
-  Dtype *output_cpu = (Dtype *)malloc(39*14*14 * sizeof(Dtype));
-  //DEBUG
   for (int g = 0; g < group_; ++g) {
     for (int im_ = 0; im_ < this->conv_out_channels_; ++im_) { // 39 in our case
       CUDA_CHECK(cudaMemcpy(col_buff_masked, col_buff, col_buffer_.count(0) * sizeof(Dtype), cudaMemcpyDeviceToDevice));
@@ -150,16 +146,6 @@ void BaseConvolutionLayer<Dtype>::weight_gpu_max_gemm(const Dtype* input,
         conv_out_spatial_dim_, this->blobs_[0]->count(2), 1, // pooled_width = 14 * 14, kernel_h = 15 * 15, kernel_w = 1 in our case
         this->blobs_[0]->count(2), 1, 0, 0, // stride_h = 15 * 15, stride_w = 1, pad_h = pad_w = 0 in our case
         mask + (im_ + num_idx * conv_out_channels_) * this->blobs_[0]->shape(1) * conv_out_spatial_dim_);
-      // DEBUG
-      if (im_ > 0) {
-        continue;
-      }
-      CUDA_CHECK(cudaMemcpy(col_buff_masked_cpu, col_buff_masked, col_buffer_.count(0) * sizeof(Dtype), cudaMemcpyDeviceToHost));
-      CUDA_CHECK(cudaMemcpy(output_cpu, output, 39*14*14 * sizeof(Dtype), cudaMemcpyDeviceToHost));
-      for (int tmp_i = 0; tmp_i < 14 * 14; ++tmp_i) {
-        LOG(INFO) << "Diff: " << output_cpu[tmp_i] << "; AfterPoolSum: " << col_buff_masked_cpu[tmp_i+14*14*66] << std::endl; // do sth
-      }
-      // DEBUG
       caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasTrans, 1,
         kernel_dim_, conv_out_spatial_dim_,
         (Dtype)1., output + output_offset_ * g + im_ * conv_out_spatial_dim_, col_buff_masked + col_offset_ * g,
