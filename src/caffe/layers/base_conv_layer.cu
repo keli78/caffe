@@ -80,7 +80,9 @@ __global__ void AfterPoolSum(const int nthreads,
   CUDA_KERNEL_LOOP(index, nthreads) {
     top_data[index] = 0;
     for (int i = 0; i < height; ++i) {
+      if (bottom_data[index + i * width] >= (Dtype)0.) {
         top_data[index] += bottom_data[index + i * width];
+      }
     }
   }
 }
