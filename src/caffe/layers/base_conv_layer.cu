@@ -83,6 +83,9 @@ __global__ void AfterPoolSum(const int nthreads,
       if (bottom_data[index + i * width] >= (Dtype)0.) {
         top_data[index] += bottom_data[index + i * width];
       }
+      else {
+        printf("NEGATIVE!\n");
+      }
     }
   }
 }
