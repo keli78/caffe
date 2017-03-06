@@ -1313,6 +1313,7 @@ message V1LayerParameter {
     THRESHOLD = 31;
     NORMALIZATION = 40;
     SIGMOID_CROSS_ENTROPY_LOSS_WEIGHTED = 41;
+    DICE_LOSS = 42;
     MAXCONV = 42;
   }
   optional LayerType type = 5;
