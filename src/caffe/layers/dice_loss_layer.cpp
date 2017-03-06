@@ -83,7 +83,6 @@ void DiceLossLayer<Dtype>::Backward_cpu(
   }
   if (propagate_down[0]) {
     // First, compute the diff
-    const int count = bottom[0]->count();
     const int num = bottom[0]->num();
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
     const Dtype* input_data = bottom[0]->cpu_data();
