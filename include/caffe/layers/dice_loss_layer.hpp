@@ -31,7 +31,7 @@ class DiceLossLayer : public LossLayer<Dtype> {
   virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
-  Dtype* PP,PG,GG,SPP,SPG,SGG,SPP_GG,D;
+  Dtype *PP,*PG,*GG,*SPP,*SPG,*SGG,*SPP_GG,*D;
 };
 
 }  // namespace caffe
