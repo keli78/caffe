@@ -13,7 +13,7 @@ void DiceLossLayer<Dtype>::LayerSetUp(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::LayerSetUp(bottom, top);
   int dim = bottom[0]->count() / bottom[0]->num();
-  this->PG = (Dtype *)malloc(bottom[0]->count()*sizeof(Dtype));
+  PG = (Dtype *)malloc(bottom[0]->count()*sizeof(Dtype));
   this->PP = (Dtype *)malloc(bottom[0]->count()*sizeof(Dtype));
   this->GG = (Dtype *)malloc(bottom[0]->count()*sizeof(Dtype));
   this->SPG = (Dtype *)malloc(dim*sizeof(Dtype));
@@ -29,6 +29,7 @@ void DiceLossLayer<Dtype>::Reshape(
   LossLayer<Dtype>::Reshape(bottom, top);
   CHECK_EQ(bottom[0]->count(), bottom[1]->count()) <<
       "DICE_LOSS layer inputs must have the same count.";
+  int dim = bottom[0]->count() / bottom[0]->num();
   free(this->PG);
   this->PG = (Dtype *)malloc(bottom[0]->count()*sizeof(Dtype));
   free(this->PP);
