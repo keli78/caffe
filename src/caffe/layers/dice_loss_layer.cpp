@@ -98,7 +98,7 @@ void DiceLossLayer<Dtype>::Backward_cpu(
       caffe_sub(dim, tmp_data1, tmp_data3, tmp_data2);
       caffe_powx(dim, this->SPP_GG, (Dtype)2., tmp_data1);
       caffe_div(dim, tmp_data2, tmp_data1, tmp_data3);
-      caffe_cpu_scale(dim, (Dtype)2., tmp_data3, bottom_diff+i*dim);
+      caffe_cpu_scale(dim, (Dtype)(-2.0), tmp_data3, bottom_diff+i*dim);
     }
     free(tmp_data1);
     free(tmp_data2);
