@@ -743,6 +743,7 @@ template <typename Dtype>
 void Net<Dtype>::Reshape() {
   for (int i = 0; i < layers_.size(); ++i) {
     layers_[i]->Reshape(bottom_vecs_[i], top_vecs_[i]);
+    std::count << layers_[i]->type() << std::endl; // DEBUG
   }
 }
 
