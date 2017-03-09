@@ -252,7 +252,8 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     caffe_set(bias_multiplier_.count(), Dtype(1),
         bias_multiplier_.mutable_cpu_data());
   }
-  max_idx_.Reshape(bottom[0]->num(), num_output_, channels_, 
+  std::cerr<<this->type()<<std::endl;
+  max_idx_.Reshape(bottom[0]->num(), num_output_, channels_,
     conv_out_spatial_dim_); // BatchSize*39*176*(14*14) in our case
 }
 
@@ -275,9 +276,9 @@ void BaseConvolutionLayer<Dtype>::forward_cpu_max_conv(const Dtype* input,
               for (int ic_ = 0; ic_ < this->blobs_[0]->count(1); ++ic_) { // 176*15*15 in our case
                   transposed_col_buff_[ic_] = *(col_buff + this->col_offset_ * g + in_ + ic_ * this->conv_out_spatial_dim_); // Transposing col in col_buff into row in transposed_col_buff_
               }
-              caffe_mul(this->blobs_[0]->count(1), 
-                  weights + this->weight_offset_ * g + im_ * this->blobs_[0]->count(1), 
-                  transposed_col_buff_, 
+              caffe_mul(this->blobs_[0]->count(1),
+                  weights + this->weight_offset_ * g + im_ * this->blobs_[0]->count(1),
+                  transposed_col_buff_,
                   dot_proc_);
                   Dtype max_sum = 0;
               for (int ic_ = 0; ic_ < this->blobs_[0]->shape(1); ++ic_) { // 176 in our case
