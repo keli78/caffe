@@ -253,7 +253,7 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     caffe_set(bias_multiplier_.count(), Dtype(1),
         bias_multiplier_.mutable_cpu_data());
   }
-  if (strcmp(this->type(),"MaxConvolution")~=0) {
+  if (strcmp(this->type(),"MaxConvolution")!=0) {
     max_idx_.Reshape(bottom[0]->num(), num_output_, channels_,
       conv_out_spatial_dim_); // BatchSize*39*176*(14*14) in our case
   }
