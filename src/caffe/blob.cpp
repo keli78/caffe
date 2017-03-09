@@ -33,7 +33,7 @@ void Blob<Dtype>::Reshape(const vector<int>& shape) {
     if (count_ != 0) {
       CHECK_LE(shape[i], INT_MAX / count_) << "blob size exceeds INT_MAX";
       for (int k=0;k<shape.size();++k) //DEBUG
-          std::cerr << shape[k] << std::endl; //DEBUG
+          std::cerr << k << ":" << shape[k] << std::endl; //DEBUG
     }
     count_ *= shape[i];
     shape_[i] = shape[i];
