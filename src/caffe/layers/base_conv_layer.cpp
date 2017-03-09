@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <vector>
 #include <limits>
+#include <stdio.h>
 
 #include "caffe/filler.hpp"
 #include "caffe/layers/base_conv_layer.hpp"
@@ -252,9 +253,10 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     caffe_set(bias_multiplier_.count(), Dtype(1),
         bias_multiplier_.mutable_cpu_data());
   }
-  std::cerr<<this->type()<<std::endl;
-  max_idx_.Reshape(bottom[0]->num(), num_output_, channels_,
-    conv_out_spatial_dim_); // BatchSize*39*176*(14*14) in our case
+  if (strcmp(this->type(),'MaxConvolution')) {
+    max_idx_.Reshape(bottom[0]->num(), num_output_, channels_,
+      conv_out_spatial_dim_); // BatchSize*39*176*(14*14) in our case
+  }
 }
 
 template <typename Dtype> // TODO (Zhishuai): only valid when group_ == 1
