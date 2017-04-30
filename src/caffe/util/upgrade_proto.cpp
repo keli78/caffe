@@ -941,6 +941,8 @@ const char* UpgradeV1LayerType(const V1LayerParameter_LayerType type) {
     return "SigmoidCrossEntropyLossWeighted";
   case V1LayerParameter_LayerType_DICE_LOSS:
     return "DiceLoss";
+  case V1LayerParameter_LayerType_DICE_LOSS_NEW:
+    return "DiceLossNew";
   case V1LayerParameter_LayerType_SILENCE:
     return "Silence";
   case V1LayerParameter_LayerType_SOFTMAX:
