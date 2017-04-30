@@ -725,7 +725,7 @@ message DropoutParameter {
   optional float dropout_ratio = 1 [default = 0.5]; // dropout ratio
 }
 
-message DiceLossNew {
+message DiceLossNewParameter {
   optional uint32 behavior = 1 [default = 0]; // DiceLossNew Behavior
 }
 
