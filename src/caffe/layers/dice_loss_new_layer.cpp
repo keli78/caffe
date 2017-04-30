@@ -91,6 +91,6 @@ STUB_GPU(DiceLossNewLayer);
 #endif
 
 INSTANTIATE_CLASS(DiceLossNewLayer);
-REGISTER_LAYER_CLASS(DiceLoss);
+REGISTER_LAYER_CLASS(DiceLossNew);
 
 }  // namespace caffe
