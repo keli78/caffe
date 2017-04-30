@@ -79,8 +79,8 @@ void DiceLossNewLayer<Dtype>::Backward_cpu(
         }
         for (int i=0; i<ndata;++i) {
           bottom_diff[start_index+i]=-(Dtype)(2.0)*
-            (target[start_index+i]*(PP+QQ)-((Dtype)(2.0))*input_data[start_index+i]*PQ)/
-            (((Dtype)(num*channel))*(PP+QQ)*(PP+QQ));
+            (target[start_index+i]*(PP+GG)-((Dtype)(2.0))*input_data[start_index+i]*PG)/
+            (((Dtype)(num*channel))*(PP+GG)*(PP+GG));
         }
       }
   }
