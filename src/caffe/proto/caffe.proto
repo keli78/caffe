@@ -405,7 +405,7 @@ message LayerParameter {
   optional WindowDataParameter window_data_param = 129;
   optional NormalizationParameter normalization_param = 147;
   optional MaxConvolutionParameter max_convolution_parameter = 148;
-  optional DiceLossNewParameter dice_loss_new_parameter = 149;
+  optional DiceLossNewParameter dice_loss_new_param = 149;
 }
 
 message NormalizationParameter {
