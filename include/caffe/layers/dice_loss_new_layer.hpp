@@ -32,6 +32,8 @@ class DiceLossNewLayer : public LossLayer<Dtype> {
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
 
   Dtype *L;
+
+  int behavior;
 };
 
 }  // namespace caffe
