@@ -11,6 +11,7 @@ namespace caffe {
 template <typename Dtype>
   void DiceLossNewLayer<Dtype>::Forward_gpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    LOG(INFO) << "DICE_LOSS_GPU";
   // Compute the loss (negative log likelihood)
   //const int count = bottom[0]->count();
     const int num = bottom[0]->shape(0);
