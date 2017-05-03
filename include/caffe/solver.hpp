@@ -56,7 +56,7 @@ class Solver {
   // in a non-zero iter number to resume training for a pre-trained net.
   virtual void Solve(const char* resume_file = NULL);
   inline void Solve(const string resume_file) { Solve(resume_file.c_str()); }
-  void Step(int iters);
+  void Step(int iters, bool write=true);
   // The Restore method simply dispatches to one of the
   // RestoreSolverStateFrom___ protected methods. You should implement these
   // methods to restore the state from the appropriate snapshot type.
@@ -96,7 +96,7 @@ class Solver {
 
  protected:
   // Make and apply the update value for the current iteration.
-  virtual void ApplyUpdate() = 0;
+  virtual void ApplyUpdate(bool write=true) = 0;
   string SnapshotFilename(const string extension);
   string SnapshotToBinaryProto();
   string SnapshotToHDF5();
@@ -144,7 +144,7 @@ class WorkerSolver : public Solver<Dtype> {
       : Solver<Dtype>(param, root_solver) {}
 
  protected:
-  void ApplyUpdate() {}
+  void ApplyUpdate(bool write=true) {}
   void SnapshotSolverState(const string& model_filename) {
     LOG(FATAL) << "Should not be called on worker solver.";
   }

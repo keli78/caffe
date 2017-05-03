@@ -191,7 +191,7 @@ void Solver<Dtype>::InitTestNets() {
 }
 
 template <typename Dtype>
-void Solver<Dtype>::Step(int iters) {
+void Solver<Dtype>::Step(int iters, bool write) {
   const int start_iter = iter_;
   const int stop_iter = iter_ + iters;
   int average_loss = this->param_.average_loss();
@@ -250,7 +250,7 @@ void Solver<Dtype>::Step(int iters) {
     for (int i = 0; i < callbacks_.size(); ++i) {
       callbacks_[i]->on_gradients_ready();
     }
-    ApplyUpdate();
+    ApplyUpdate(write, cal);
 
     // Increment the internal iter_ counter -- its value should always indicate
     // the number of times the weights have been updated.
