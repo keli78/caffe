@@ -50,6 +50,7 @@ template <typename Dtype>
         temp_loss+=(Dtype)(2.0)*PG/(PP + GG);
       }
       denominator=channel;
+
     }
     if (behavior&1) {
       top[0]->mutable_gpu_data()[0]=temp_loss/((Dtype)denominator);

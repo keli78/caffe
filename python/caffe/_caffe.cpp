@@ -329,6 +329,7 @@ BOOST_PYTHON_MODULE(_caffe) {
     .def("_set_input_arrays", &Net_SetInputArrays,
         bp::with_custodian_and_ward<1, 2, bp::with_custodian_and_ward<1, 3> >())
     .def("save", &Net_Save)
+    .def("_update", &Net<Dtype>::Update)
     .def("save_hdf5", &Net_SaveHDF5)
     .def("load_hdf5", &Net_LoadHDF5);
   BP_REGISTER_SHARED_PTR_TO_PYTHON(Net<Dtype>);
@@ -374,6 +375,7 @@ BOOST_PYTHON_MODULE(_caffe) {
     .def("solve", static_cast<void (Solver<Dtype>::*)(const char*)>(
           &Solver<Dtype>::Solve), SolveOverloads())
     .def("step", &Solver<Dtype>::Step)
+    .def("applyupdate", &Solver<Dtype>::ApplyUpdate)
     .def("restore", &Solver<Dtype>::Restore)
     .def("snapshot", &Solver<Dtype>::Snapshot);
   BP_REGISTER_SHARED_PTR_TO_PYTHON(Solver<Dtype>);
