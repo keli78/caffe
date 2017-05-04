@@ -12,7 +12,7 @@ template <typename Dtype>
   void DiceLossNewLayer<Dtype>::Forward_gpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   // Compute the loss (negative log likelihood)
-  //const int count = bottom[0]->count();
+    const int count = bottom[0]->count();
     const int num = bottom[0]->shape(0);
     const int channel = bottom[0]->shape(1);
     const int ndata = bottom[0]->count(2);
@@ -22,47 +22,32 @@ template <typename Dtype>
     Dtype temp_loss = (Dtype)0;
     int denominator;
     if (behavior&2) {
-      for (int n=0; n < num; ++n) {
-        for (int c=0; c< channel;++c) {
-          Dtype PP=0, GG=0, PG=0;
-          int start_index=n*ndata*channel+c*ndata;
-	  caffe_gpu_dot(ndata, input_data + start_index, input_data + start_index, &PP);
-	  caffe_gpu_dot(ndata, target + start_index, target + start_index, &GG);
-	  caffe_gpu_dot(ndata, input_data + start_index, target + start_index, &PG);
-          temp_loss+=(Dtype)(2.0)*PG/(PP + GG);
-        }
-      }
-      denominator=num*channel;
-    }
-    else {
-      for (int c=0; c < channel; ++c) {
-        Dtype PP=0, GG=0, PG=0;
-        for (int n=0; n < num; ++n) {
-          Dtype PP_tmp=0, GG_tmp=0, PG_tmp=0;
-          int start_index=n*ndata*channel+c*ndata;
-	  caffe_gpu_dot(ndata, input_data + start_index, input_data + start_index, &PP_tmp);
-	  PP += PP_tmp;
-	  caffe_gpu_dot(ndata, target + start_index, target + start_index, &GG_tmp);
-	  GG += GG_tmp;
-	  caffe_gpu_dot(ndata, input_data + start_index, target + start_index, &PG_tmp);
-	  PG += PG_tmp;
-        }
-        temp_loss+=(Dtype)(2.0)*PG/(PP + GG);
-      }
-      denominator=channel;
+      Dtype PP=0, GG=0, PG=0;
+      caffe_gpu_dot(count, input_data, input_data, &PP);
+      caffe_gpu_dot(count, target, target, &GG);
+      caffe_gpu_dot(count, input_data, target, &PG);
+      temp_loss = (Dtype)(2.0) * PG/(PP + GG);
+      denominator = 1;
+    } else {
+      Dtype PP=0, GG=0, PG=0;
+      caffe_gpu_dot(count, input_data, input_data, &PP);
+      caffe_gpu_dot(count, target, target, &GG);
+      caffe_gpu_dot(count, input_data, target, &PG);
+      temp_loss = (Dtype)(2.0) * PG/(PP + GG);
+      denominator = 1;
     }
     if (behavior&1) {
-      top[0]->mutable_gpu_data()[0]=temp_loss/((Dtype)denominator);
+      top[0]->mutable_cpu_data()[0]=temp_loss/((Dtype)denominator);
     }
     else{
-      top[0]->mutable_gpu_data()[0]=temp_loss;
+      top[0]->mutable_cpu_data()[0]=temp_loss;
     }
   }
 
 template <typename Dtype>
-__global__ void DiceLossNewBackward(const int n, const int start_index, const Dtype* input, const Dtype* target, Dtype PP, Dtype GG, Dtype PG, const int size, Dtype* bottom_diff) {
+__global__ void DiceLossNewBackward(const int n, const Dtype* input, const Dtype* target, Dtype PP, Dtype GG, Dtype PG, const int size, Dtype* bottom_diff) {
   CUDA_KERNEL_LOOP(index, n) {
-    bottom_diff[start_index + index] =-(Dtype)(2.0) * (target[start_index + index] * (PP + GG) - ((Dtype)(2.0) * input[start_index + index] * PG))/((Dtype)(size) * (PP + GG) * (PP + GG));
+    bottom_diff[index] =-(Dtype)(2.0) * (target[index] * (PP + GG) - ((Dtype)(2.0) * input[index] * PG))/((Dtype)(size) * (PP + GG) * (PP + GG));
   }
 }
 
@@ -76,6 +61,7 @@ template <typename Dtype>
     }
     if (propagate_down[0]) {
     // First, compute the diff
+      const int count = bottom[0]->count();
       const int num = bottom[0]->shape(0);
       const int channel = bottom[0]->shape(1);
       const int ndata = bottom[0]->count(2);
@@ -83,43 +69,17 @@ template <typename Dtype>
       const Dtype* input_data = bottom[0]->gpu_data();
       const Dtype* target = bottom[1]->gpu_data();
       if (behavior&2) {
-        for (int n=0; n<num; ++n) {
-          for (int c=0; c<channel; ++c) {
-            Dtype PP=0, GG=0, PG=0;
-            int start_index=n*ndata*channel+c*ndata;
-	    caffe_gpu_dot(ndata, input_data + start_index, input_data + start_index, &PP);
-	    caffe_gpu_dot(ndata, target + start_index, target + start_index, &GG);
-	    caffe_gpu_dot(ndata, input_data + start_index, target + start_index, &PG);
-	    if (behavior&1) {
-	      DiceLossNewBackward<Dtype><<<CAFFE_GET_BLOCKS(ndata), CAFFE_CUDA_NUM_THREADS>>>(ndata, start_index, input_data, target, PP, GG, PG, num*channel, bottom_diff);
-	    } else {
-	      DiceLossNewBackward<Dtype><<<CAFFE_GET_BLOCKS(ndata), CAFFE_CUDA_NUM_THREADS>>>(ndata, start_index, input_data, target, PP, GG, PG, 1, bottom_diff);
-	    }
-          }
-        }
-      }
-      else {
-        for (int c=0; c<channel; ++c) {
-          Dtype PP=0, GG=0, PG=0;
-          for (int n=0; n<num; ++n) {
-            Dtype PP_tmp=0, GG_tmp=0, PG_tmp=0;
-            int start_index=n*ndata*channel+c*ndata;
-	    caffe_gpu_dot(ndata, input_data + start_index, input_data + start_index, &PP_tmp);
-	    PP += PP_tmp;
-	    caffe_gpu_dot(ndata, target + start_index, target + start_index, &GG_tmp);
-	    GG += GG_tmp;
-	    caffe_gpu_dot(ndata, input_data + start_index, target + start_index, &PG_tmp);
-	    PG += PG_tmp;
-          }
-          for (int n=0; n<num; ++n) {
-            int start_index=n*ndata*channel+c*ndata;
-	    if (behavior&1) {
-	      DiceLossNewBackward<Dtype><<<CAFFE_GET_BLOCKS(ndata), CAFFE_CUDA_NUM_THREADS>>>(ndata, start_index, input_data, target, PP, GG, PG, num*channel, bottom_diff);
-	    } else {
-	      DiceLossNewBackward<Dtype><<<CAFFE_GET_BLOCKS(ndata), CAFFE_CUDA_NUM_THREADS>>>(ndata, start_index, input_data, target, PP, GG, PG, 1, bottom_diff);
-	    }
-          }
-        }
+        Dtype PP = 0, GG = 0, PG = 0;
+        caffe_gpu_dot(count, input_data, input_data, &PP);
+        caffe_gpu_dot(count, target, target, &GG);
+        caffe_gpu_dot(count, input_data, target, &PG);
+	DiceLossNewBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(count, input_data, target, PP, GG, PG, 1, bottom_diff);
+      } else {
+        Dtype PP = 0, GG = 0, PG = 0;
+        caffe_gpu_dot(count, input_data, input_data, &PP);
+        caffe_gpu_dot(count, target, target, &GG);
+        caffe_gpu_dot(count, input_data, target, &PG);
+	DiceLossNewBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(count, input_data, target, PP, GG, PG, 1, bottom_diff);
       }
     }
   }
