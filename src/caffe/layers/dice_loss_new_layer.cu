@@ -26,14 +26,14 @@ template <typename Dtype>
       caffe_gpu_dot(count, input_data, input_data, &PP);
       caffe_gpu_dot(count, target, target, &GG);
       caffe_gpu_dot(count, input_data, target, &PG);
-      temp_loss = (Dtype)(2.0) * PG/(PP + GG);
+      temp_loss += (Dtype)(2.0) * PG/(PP + GG);
       denominator = 1;
     } else {
       Dtype PP=0, GG=0, PG=0;
       caffe_gpu_dot(count, input_data, input_data, &PP);
       caffe_gpu_dot(count, target, target, &GG);
       caffe_gpu_dot(count, input_data, target, &PG);
-      temp_loss = (Dtype)(2.0) * PG/(PP + GG);
+      temp_loss += (Dtype)(2.0) * PG/(PP + GG);
       denominator = 1;
     }
     if (behavior&1) {
